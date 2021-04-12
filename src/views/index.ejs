@@ -37,7 +37,7 @@
           <a href="/profile" id="avatar-profile">
             <p> <%= Profile.data.name %>  <span>Ver perfil</span></p>
             <img
-              src="<%= Profile.data.avatar %> "
+              src="<%= Profile.avatar %> "
             />
           </a>
         </section>
@@ -103,7 +103,7 @@
               <div class="actions column flex">
                 <p class="sr-only">Ações</p>
                 <a 
-                  href="/job/edit" 
+                  href="/job/<%= job.id %> " 
                   class="button white edit" 
                   title="Editar Job">
                   <img src="/images/edit-24.svg" alt="Editar Job" />

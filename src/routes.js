@@ -53,9 +53,10 @@ data: [
     {
       id: 1,
       name: 'Pizzaria Master pão',
-      'daily-hours': 2,
-      'total-hours': 1,
+      'daily-hours': 50,
+      'total-hours': 100,
       created_at: Date.now(),
+      
       
     },
     {
@@ -63,7 +64,8 @@ data: [
       name: ' pão master pizza',
       'daily-hours': 3,
       'total-hours': 47,
-      created_at: Date.now()
+      created_at: Date.now(),
+     
     }
   
 ],
@@ -79,7 +81,7 @@ data: [
             ...job,
             remaining,
             status,
-            budget: Profile.data["value-hours"] * job["total-hours"]
+            budget: Job.services.calculateBudget(job, Profile.data["value-hours"])
           }
         })
         
@@ -99,7 +101,44 @@ data: [
 	})
 	return res.redirect('/')
     },
+    show(req, res){
+
+    const jobId= req.params.id
+
+     const job = Job.data.find(job => Number(job.id) === Number(jobId)) 
+
+     if(!job){
+       return res.send('Job not found!')
+     }
+     job.budget = Job.services.calculateBudget(job, Profile.data["value-hours"])
+
+      return res.render(views + 'job-edit', {  job })
+    },
+    update(req, res) {
+
+      const jobId= req.params.id
+
+     const job = Job.data.find(job => Number(job.id) === Number(jobId)) 
+
+     if(!job){
+       return res.send('Job not found!')
+     }
+
+     const updatedJob = {
+       ...job,
+       name: req.body.name,
+       "total-hours": req.body["total-hours"],
+       "daily-hours": req.body["daily-hours"],
+    }
+    job.data =  job.data.map( job => {
+      if(Number(job.id) === Number( jobId)){
+        job = updatedJob
+      }
+      return job
+    })
+    res.redirect('/job/' + jobId)
   },
+},
 
   services: {
     remainingDays(job){
@@ -119,7 +158,9 @@ data: [
       return dayDiff
     
       //restam x dias
-    }
+    },
+
+    calculateBudget: (job, valueHour) => valueHour * job["total-hours"]
   }
 }
 
@@ -132,7 +173,10 @@ routes.get('/job', Job.controllers.create)
 routes.post('/job', Job.controllers.save)
 
 
-routes.get('/job/edit', (req, res) =>  res.render(views +  'job-edit'))
+routes.get('/job/:id', Job.controllers.show)
+
+routes.post('/job/:id', Job.controllers.update)
+
 routes.get('/profile',Profile.controllers.index)
 routes.post('/profile',Profile.controllers.update)
 
