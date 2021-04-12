@@ -6,14 +6,42 @@ const views = __dirname + "/views/"
 
 
 
-const profile = {
-	name: 'Hiago',
-	avatar: 'https://avatars.githubusercontent.com/u/72813560?v=4',
-	"monthly-budget": 3000,
-	"days-per-week": 5,
-	"hours-per-day": 5,
-	"vacation-per-year": 4,
-  "value-hours": 75
+const Profile = {
+  data:{
+    name: 'Hiago',
+    avatar: 'https://avatars.githubusercontent.com/u/72813560?v=4',
+    "monthly-budget": 3000,
+    "days-per-week": 5,
+    "hours-per-day": 5,
+    "vacation-per-year": 4,
+    "value-hours": 75
+  },
+  controllers: {
+    index(req, res){
+      return res.render(views +  'profile', { profile: Profile.data })
+    },
+
+    update(req, res) {
+      const data = req.body
+
+      const weeksPeryear = 52
+
+      const weeksPerMonth = (weeksPeryear - data["vacation-per-year"]) / 12
+
+      const weekTotalHours = data["hours-per-day"] * data["days-per-week"]
+
+      const monthlyTotalHours = weekTotalHours * weeksPerMonth
+
+      const valueHour = data["monthly-budget"] / monthlyTotalHours
+
+      Profile.data = {
+        ...Profile.data,
+        ...req.body,
+        "value-hours": valueHour
+      }
+      return res.redirect('/profile')
+    }
+  }
 }
 
 
@@ -51,18 +79,18 @@ data: [
             ...job,
             remaining,
             status,
-            budget: profile["value-hours"] * job["total-hours"]
+            budget: Profile.data["value-hours"] * job["total-hours"]
           }
         })
         
-        return res.render(views +  'index', { profile, jobs:updateJobs  })
+        return res.render(views +  'index', { Profile, jobs:updateJobs  })
     },
     create(req, res){
       return res.render(views +  'job')
     },
     save(req, res){
       const lastId = Job.data[Job.data.length - 1]?.id || 1;
-    jobs.push({
+    Job.data.push({
     id: lastId + 1,
 		name: req.body.name,
 		'daily-hours': req.body['daily-hours'],
@@ -100,11 +128,13 @@ data: [
 
 
 routes.get('/', Job.controllers.index)
-
-
 routes.get('/job', Job.controllers.create)
 routes.post('/job', Job.controllers.save)
+
+
 routes.get('/job/edit', (req, res) =>  res.render(views +  'job-edit'))
-routes.get('/profile', (req, res) =>  res.render(views +  'profile', { profile }))
+routes.get('/profile',Profile.controllers.index)
+routes.post('/profile',Profile.controllers.update)
+
 
 module.exports = routes
