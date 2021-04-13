@@ -24,9 +24,9 @@ const Profile = {
     update(req, res) {
       const data = req.body
 
-      const weeksPeryear = 52
+      const weeksPerYear = 52
 
-      const weeksPerMonth = (weeksPeryear - data["vacation-per-year"]) / 12
+      const weeksPerMonth = (weeksPerYear - data["vacation-per-year"]) / 12
 
       const weekTotalHours = data["hours-per-day"] * data["days-per-week"]
 
@@ -130,14 +130,23 @@ data: [
        "total-hours": req.body["total-hours"],
        "daily-hours": req.body["daily-hours"],
     }
-    job.data =  job.data.map( job => {
+    Job.data =  Job.data.map((job) => {
       if(Number(job.id) === Number( jobId)){
         job = updatedJob
       }
       return job
     })
-    res.redirect('/job/' + jobId)
+    
+    res.redirect('/')
   },
+  delete(req, res) {
+    const jobId = req.params.id
+
+    Job.data = Job.data.filter(job => Number(job.id) !== Number(jobId))
+
+    return res.redirect('/')
+  },
+
 },
 
   services: {
@@ -174,8 +183,9 @@ routes.post('/job', Job.controllers.save)
 
 
 routes.get('/job/:id', Job.controllers.show)
-
 routes.post('/job/:id', Job.controllers.update)
+routes.post('/job/delete/:id', Job.controllers.delete)
+
 
 routes.get('/profile',Profile.controllers.index)
 routes.post('/profile',Profile.controllers.update)
